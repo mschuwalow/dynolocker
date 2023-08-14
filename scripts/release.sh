@@ -6,6 +6,7 @@ set -e
 
 if [[ -z "$PKG" ]] \
   || [[ -z "$VERSION" ]] \
+  || [[ -z "$GITHUB_ORG" ]] \
   || [[ -z "$GITHUB_OAUTH" ]]
 then
   echo "Please don't run this script directly, instead run 'make release'"

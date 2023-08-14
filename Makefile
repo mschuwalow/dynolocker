@@ -3,7 +3,7 @@ PKG                  := dynolocker
 VERSION              := $(shell cat VERSION)
 GITCOMMIT            := $(shell git rev-parse --short HEAD)
 GITUNTRACKEDCHANGES  := $(shell git status --porcelain --untracked-files=no)
-GITHUB_ORG           := joshmyers
+GITHUB_ORG           := mschuwalow
 
 ifneq ($(GITUNTRACKEDCHANGES),)
 GITCOMMIT := $(GITCOMMIT)-dirty
@@ -55,7 +55,7 @@ check_github_token:
 	$(if ${GITHUB_OAUTH},,$(error GITHUB_OAUTH not set, please set ENV var))
 
 .PHONY: release
-release: test fmt build check_github_token ## Release to Github
+release: build check_github_token ## Release to Github
 	@echo "==> Releasing binary artifacts..."
 	@sh -c  "./scripts/release.sh"
 
