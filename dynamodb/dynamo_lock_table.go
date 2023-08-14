@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/joshmyers/dynolocker/aws_helper"
-	"github.com/joshmyers/dynolocker/errors"
-	"github.com/joshmyers/dynolocker/util"
+	"github.com/mschuwalow/dynolocker/errors"
+	"github.com/mschuwalow/dynolocker/util"
 	log "github.com/sirupsen/logrus"
 	"time"
 )
@@ -27,21 +27,17 @@ const DEFAULT_READ_CAPACITY_UNITS = 1
 const DEFAULT_WRITE_CAPACITY_UNITS = 1
 
 // Create an authenticated client for DynamoDB
-func CreateDynamoDbClient(awsRegion string) (*dynamodb.DynamoDB, error) {
-	session, err := aws_helper.CreateAwsSession(awsRegion)
-	if err != nil {
-		return nil, err
-	}
-
-	return dynamodb.New(session), nil
+func CreateDynamoDbClient(region string, endpoint string, disableSSL bool) *dynamodb.DynamoDB {
+	return dynamodb.New(session.New(&aws.Config{
+		Endpoint:   &endpoint,
+		Region:     &region,
+		DisableSSL: &disableSSL,
+	}))
 }
 
 // Create the lock table in DynamoDB if it doesn't already exist
-func CreateLockTableIfNecessary(tableName, awsRegion string) error {
-	dynamodbClient, err := CreateDynamoDbClient(awsRegion)
-	if err != nil {
-		return err
-	}
+func CreateLockTableIfNecessary(tableName string, region string, endpoint string, disableSSL bool) error {
+	dynamodbClient := CreateDynamoDbClient(region, endpoint, disableSSL)
 
 	log.WithFields(log.Fields{
 		"table": tableName,

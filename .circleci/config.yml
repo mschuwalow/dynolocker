@@ -1,17 +1,29 @@
----
-version: 2
-executorType: docker
-containerInfo:
-  - image: library/golang
-    environment:
-      AWS_ACCESS_KEY_ID: 1
-      AWS_SECRET_ACCESS_KEY: 1
-      GLIDE_VERSION: 0.13.2
+version: 2.1
+
 jobs:
   build:
-    workdir: "/go/src/github.com/joshmyers/dynolocker"
+    docker:
+      - image: cimg/go:1.15.3
+        environment:
+          AWS_ACCESS_KEY_ID: 1
+          AWS_SECRET_ACCESS_KEY: 1
+          GLIDE_VERSION: 0.13.2
+          DOCKER_COMPOSE_FILE: 'docker-compose.yml'
+          DOCKER_COMPOSE_PORTS: '4566'
+      - image: localstack/localstack:0.12.5
+        name: localstack
+        environment:
+         SERVICES: dynamodb
+         DEBUG: 1
+         SKIP_INFRA_DOWNLOADS: true
+         START_WEB: 0
+    working_directory: "~/go/src/github.com/mschuwalow/dynolocker"
     steps:
+      - setup_remote_docker:
+          version: 20.10.14
+
       - checkout
+
       - run:
           name: Install Glide
           command: |
@@ -19,17 +31,26 @@ jobs:
             curl -sSLfO https://github.com/Masterminds/glide/releases/download/v${GLIDE_VERSION}/glide-v${GLIDE_VERSION}-linux-amd64.tar.gz
             mkdir glide
             tar -xzf glide-v${GLIDE_VERSION}-linux-amd64.tar.gz -C ./glide
-            cp ./glide/linux-amd64/glide /usr/local/bin/glide
+            sudo cp ./glide/linux-amd64/glide /usr/local/bin/glide
             rm -r glide glide-v${GLIDE_VERSION}-linux-amd64.tar.gz
+
       - restore_cache:
           key: glide-{{ checksum "glide.lock" }}
+
       - run:
           name: Download vendored Go dependencies
           command: make install-deps
+
       - save_cache:
           key: glide-{{ checksum "glide.lock" }}
           paths:
             - vendor
+
       - run:
           name: Run unit tests
           command: make test
+
+workflows:
+  build_and_test:
+    jobs:
+      - build

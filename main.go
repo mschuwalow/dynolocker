@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/joshmyers/ddbsync"
-	"github.com/joshmyers/dynolocker/dynamodb"
+	"github.com/mschuwalow/dynolocker/dynamodb"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"os"
@@ -29,7 +29,7 @@ func unlock(c *cli.Context, m sync.Locker) {
 }
 
 func newDynolocker(c *cli.Context) sync.Locker {
-	s := ddbsync.NewLockService(c.GlobalString("table"), c.GlobalString("region"), "", c.GlobalBool("disable_ssl"))
+	s := ddbsync.NewLockService(c.GlobalString("table"), c.GlobalString("region"), c.GlobalString("endpoint"), c.GlobalBool("disable_ssl"))
 	return s.NewLock(c.GlobalString("name"), c.GlobalInt64("ttl"), c.GlobalDuration("retry"))
 }
 
@@ -60,9 +60,15 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:   "region",
-			Value:  "eu-west-1",
+			Value:  "eu-east-1",
 			Usage:  "AWS region",
-			EnvVar: "AWS_DEFAULT_REGION",
+			EnvVar: "AWS_REGION",
+		},
+		cli.StringFlag{
+			Name:   "endpoint",
+			Value:  "",
+			Usage:  "AWS endpoint",
+			EnvVar: "AWS_ENDPOINT",
 		},
 		cli.DurationFlag{
 			Name:  "retry",
@@ -96,7 +102,7 @@ func main() {
 			Usage: "Create a lock",
 			Action: func(c *cli.Context) error {
 				if c.BoolT("create-table") {
-					dynamodb.CreateLockTableIfNecessary(c.GlobalString("table"), c.GlobalString("region"))
+					dynamodb.CreateLockTableIfNecessary(c.GlobalString("table"), c.GlobalString("region"), c.GlobalString("endpoint"), c.GlobalBool("disable-ssl"))
 				}
 				m := newDynolocker(c)
 				lock(c, m)

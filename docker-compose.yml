@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  localstack:
+    image: localstack/localstack:0.12.5
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - SKIP_INFRA_DOWNLOADS=true
+      - START_WEB=0
+    ports:
+      - 4566:4566

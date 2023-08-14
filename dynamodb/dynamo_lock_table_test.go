@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/service/dynamodb"
-	"github.com/joshmyers/dynolocker/errors"
+	"github.com/mschuwalow/dynolocker/errors"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -37,7 +37,7 @@ func TestCreateLockTableConcurrency(t *testing.T) {
 		waitGroup.Add(1)
 		go func() {
 			defer waitGroup.Done()
-			err := CreateLockTableIfNecessary(tableName, DEFAULT_TEST_REGION)
+			err := CreateLockTableIfNecessary(tableName, DEFAULT_TEST_REGION, DEFAULT_TEST_ENDPOINT, true)
 			assert.Nil(t, err, "Unexpected error: %v", err)
 		}()
 	}
@@ -65,7 +65,7 @@ func TestCreateLockTableIfNecessaryTableAlreadyExists(t *testing.T) {
 		assertCanWriteToTable(t, tableName, client)
 
 		// Try to create the table the second time and make sure you get no errors
-		err := CreateLockTableIfNecessary(tableName, DEFAULT_TEST_REGION)
+		err := CreateLockTableIfNecessary(tableName, DEFAULT_TEST_REGION, DEFAULT_TEST_ENDPOINT, true)
 		assert.Nil(t, err, "Unexpected error: %v", err)
 	})
 }

@@ -12,7 +12,8 @@ import (
 )
 
 // For simplicity, do all testing in the us-east-1 region
-const DEFAULT_TEST_REGION = "eu-west-1"
+const DEFAULT_TEST_ENDPOINT = "http://localstack:4566"
+const DEFAULT_TEST_REGION = "eu-east-1"
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -36,11 +37,7 @@ func uniqueId() string {
 
 // Create a DynamoDB client we can use at test time. If there are any errors creating the client, fail the test.
 func createDynamoDbClientForTest(t *testing.T) *dynamodb.DynamoDB {
-	client, err := CreateDynamoDbClient(DEFAULT_TEST_REGION)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return client
+	return CreateDynamoDbClient(DEFAULT_TEST_REGION, DEFAULT_TEST_ENDPOINT, true)
 }
 
 func uniqueTableNameForTest() string {
@@ -67,7 +64,7 @@ func withLockTable(t *testing.T, action func(tableName string, client *dynamodb.
 	client := createDynamoDbClientForTest(t)
 	tableName := uniqueTableNameForTest()
 
-	err := CreateLockTableIfNecessary(tableName, DEFAULT_TEST_REGION)
+	err := CreateLockTableIfNecessary(tableName, DEFAULT_TEST_REGION, DEFAULT_TEST_ENDPOINT, true)
 	assert.Nil(t, err, "Unexpected error: %v", err)
 	defer cleanupTableForTest(t, tableName, client)
 

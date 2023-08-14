@@ -1,4 +1,4 @@
-package: github.com/joshmyers/dynolocker
+package: github.com/mschuwalow/dynolocker
 import:
 - package: github.com/urfave/cli
 - package: github.com/joshmyers/ddbsync
